@@ -2,22 +2,38 @@ import config from "../../../env/config.js";
 import { get_user } from '../../../../components/user/script.js';
 import { customalert } from "../../../components/alert/script.js";
 import { router } from '../../../app.js';
+import { refresh_user } from "../../../components/user/script.js";
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+let canvas = document.getElementById('gameCanvas');
+let ctx = canvas.getContext('2d');
 
-const backgroundCanvas = document.getElementById("backgroundCanvas");
-const bgCtx = backgroundCanvas.getContext("2d");
+let backgroundCanvas = document.getElementById("backgroundCanvas");
+let bgCtx = backgroundCanvas.getContext("2d");
 
-const backgroundImage = new Image();
+let backgroundImage = new Image();
 backgroundImage.src = '../../static/assets/jpg/bg_flappy.png';
+let mapSkin;
 
-backgroundImage.onload = function() {
-	bgCtx.drawImage(backgroundImage, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
-};
+function drawBackground() {
+    bgCtx.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+
+	let backgroundPath
+
+    if (mapSkin == 'map2')
+        backgroundPath = '../../static/assets/jpg/bg_flappy2.png';
+    else 
+        backgroundPath = '../../static/assets/jpg/bg_flappy.png';
+ 
+
+    const backgroundImage = new Image();
+    backgroundImage.src = backgroundPath;
+    backgroundImage.onload = () => {
+        bgCtx.drawImage(backgroundImage, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
+    };
+}
 
 // Gestion animation
-const playerImages = {
+let playerImages = {
 	idle: new Image(),
 	jump1: new Image(),
 	jump2: new Image(),
@@ -46,6 +62,7 @@ let player1;
 let player2;
 let player;
 let viewer;
+let user;
 let game_started;
 let game_ended;
 
@@ -129,7 +146,7 @@ function draw(interpolatedState) {
 }
 
 function draw_reset() {
-	draw({ player: { y: canvas.height / 2, score: 0 }, obstacles: [] });
+	draw({ player: { y: canvas.height / 2, score: lastGameState ? lastGameState.player.score : 0 }, obstacles: [] });
 }
 
 function interpolateGameState(currentTime) {
@@ -203,11 +220,11 @@ function closeButton()
 	`;
 	const parentDiv = document.getElementById("game-canvas");
 	
-	parentDiv.appendChild(buttonDiv)
+	parentDiv.appendChild(buttonDiv);
 	document.getElementById('button-return').addEventListener('click', function() {
-        window.location.href = '/character';
-    });
-
+		console.log("button clicked");
+		router.navigate("/character");
+	});
 }
 
 class FlappySocket {
@@ -226,18 +243,30 @@ class FlappySocket {
 
 	onmessage(event) {
 		let data = JSON.parse(event.data);
-		// console.log(data);
+		console.log(data);
 		if (data.type === 'game_update')
 			updateGame(data.message);
 		else if (data.type === 'game_started') {
 			game_started = true;
 		}
 		else if (data.type === 'game_end') {
-			let winner = data.winner === player1.id ? player1.username : player2.username;
-			customalert('Game Over', data.message + " winner is " + winner);
-			game_ended = true;
+			let winner = data.winner === player1.id ? "player1" : "player2";
+			customalert('GG', "Winner score is " + lastGameState[winner].score);
 			clearInterval(pingIntervalID);
 			closeButton();
+			game_ended = true;
+		}
+		else if (data.type === 'game_loose') {
+			let winner = data.winner === player1.id ? player1.username : player2.username;
+			let win = data.winner === user.id;
+			if (win == false)
+			{
+				this.close();
+				clearInterval(pingIntervalID);
+				closeButton();
+				game_ended = true;
+			}
+			customalert('Game Over', "Winner is " + winner, !win);
 		}
 		else if (data.type === 'viewer')
 			viewer = true;
@@ -311,21 +340,72 @@ async function get_game_players(game_id) {
 }
 
 export async function initComponent() {
+
+	canvas = document.getElementById('gameCanvas');
+	ctx = canvas.getContext('2d');
+
+	backgroundCanvas = document.getElementById("backgroundCanvas");
+	bgCtx = backgroundCanvas.getContext("2d");
+
+	let backgroundPath
+
+    if (mapSkin == 'map2')
+        backgroundPath = '../../static/assets/jpg/bg_flappy2.png';
+    else 
+        backgroundPath = '../../static/assets/jpg/bg_flappy.png';
+ 
+
+    const backgroundImage = new Image();
+    backgroundImage.src = backgroundPath;
+    backgroundImage.onload = () => {
+        bgCtx.drawImage(backgroundImage, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
+    };
+
+	// Gestion animation
+	playerImages = {
+		idle: new Image(),
+		jump1: new Image(),
+		jump2: new Image(),
+		jump3: new Image()
+	};
+
+	playerImages.idle.src = '../../static/assets/jpg/fly1.png' ;
+	playerImages.jump1.src = '../../static/assets/jpg/fly2.png' ;
+	playerImages.jump2.src = '../../static/assets/jpg/fly3.png' ;
+	playerImages.jump3.src = '../../static/assets/jpg/fly4.png' ;
+
+	currentPlayerImage = playerImages.idle;
+	animationFrame = 0;
+	isAnimating = false;
+	animationInterval;
+
+	game_speed = null;
+	player1 = null;
+	player2 = null;
+	player = null;
+	viewer = null;
+	startTime = null;
+	pingIntervalID = null;
+
 	game_speed = 0;
+	game_ended = false;
+	game_started = false;
 	jump = false;
 
 	lastUpdateTime = Date.now();
 	lastGameState = null;
 
-	const user = await get_user();
+	await new Promise((resolve, reject) => setTimeout(resolve, 100));
+	user = await get_user();
 	if (!user)
-		router.navigate('/login?return=/flappy');
+		router.navigate('/');
 
 	pingSpan = document.getElementById("ping");
 
 	const urlParams = new URLSearchParams(window.location.search);
 	const game_room = urlParams.get('game_room');
 	const game_id = urlParams.get('game_id');
+	mapSkin =  urlParams.get('map');
 	if (!game_room || !game_id)
 		router.navigate('/flappy');
 
@@ -348,13 +428,13 @@ export async function initComponent() {
 
 	document.addEventListener('keydown', handleKeydown);
 	document.addEventListener('keyup', handleKeyup);
-
+	drawBackground();
 	draw_reset();
 
 	gameLoop();
 }
 
-export function cleanupComponent() {
+export async function cleanupComponent() {
 	if (pingIntervalID) {
 		clearInterval(pingIntervalID);
 		pingIntervalID = null;
@@ -365,8 +445,10 @@ export function cleanupComponent() {
 		socket = null;
 	}
 
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	game_ended = true;
 
 	document.removeEventListener('keydown', handleKeydown);
 	document.removeEventListener('keyup', handleKeyup);
+
+	await refresh_user();
 }

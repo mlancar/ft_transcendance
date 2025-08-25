@@ -3,91 +3,47 @@ import { get_user } from '../../../../components/user/script.js';
 import { customalert } from "../../../components/alert/script.js";
 import { router } from '../../../app.js';
 import { deleteCookie } from "../../../components/storage/script.js";
+import { refresh_user } from "../../../components/user/script.js";
 
-const canvas = document.getElementById("pongCanvas");
-const ctx = canvas.getContext("2d");
+let canvas;
+let ctx;
 
-const backgroundCanvas = document.getElementById("backgroundCanvas");
-const backgroundCtx = backgroundCanvas.getContext("2d");
+let backgroundCanvas;
+let backgroundCtx;
 
-const lifeCanvas = document.getElementById("lifeCanvas");
-const lifeCtx = lifeCanvas.getContext("2d");
+let lifeCanvas;
+let lifeCtx;
 
-const heartImage = new Image();
-heartImage.src = '../../../static/assets/pong/heart.png';
-const heartEmptyImage = new Image();
-heartEmptyImage.src = '../../../static/assets/pong/heart_empty.png'; 
+let heartImage;
+let heartEmptyImage;
 
-const ballImage = new Image();
-ballImage.src = '../../../static/assets/pong/bullet.png';
+let ballImage;
 
-const idleImage = new Image();
-idleImage.src = '../../../static/assets/pong/resting.png';
-const idleImageLeft = new Image();
-idleImageLeft.src = '../../../static/assets/pong/resting_left.png';
+let idleImage;
+let idleImageLeft;
 
-const boot = new Image();
-boot.src = '../../../static/assets/pong/boot.png'
-const sword = new Image();
-sword.src = '../../../static/assets/pong/sword.png'
+let boot;
+let sword;
 
-function loadImages(characterNames) {
-    const images = {};
-
-    characterNames.forEach(name => {
-        images[name] = {
-            front: new Image(),
-            back: new Image(),
-            left: new Image(),
-            right: new Image(),
-        };
-        images[name].front.src = `../../../static/assets/pong/head/${name}_front.png`;
-        images[name].back.src = `../../../static/assets/pong/head/${name}_back.png`;
-        images[name].left.src = `../../../static/assets/pong/head/${name}_left.png`;
-        images[name].right.src = `../../../static/assets/pong/head/${name}_right.png`;
-    });
-    return images;
-}
-
-const characterMap = ['isaac', 'cain', 'maggie', 'juda','isaac', 'eve'];
-const characterImages = loadImages(characterMap);
+const characterMap = ['isaac', 'cain', 'maggie', 'juda','blue', 'eve'];
+let characterImages;
 
 const paddleBodyAnimationFrames = [
-    '../../../static/assets/pong/moving_frame_1.png',
-    '../../../static/assets/pong/moving_frame_2.png',
-    '../../../static/assets/pong/moving_frame_3.png',
-    '../../../static/assets/pong/moving_frame_4.png',
-    '../../../static/assets/pong/moving_frame_5.png',
-    '../../../static/assets/pong/moving_frame_6.png',
-    '../../../static/assets/pong/moving_frame_7.png',
-    '../../../static/assets/pong/moving_frame_8.png',
-    '../../../static/assets/pong/moving_frame_9.png',
+	'../../../static/assets/pong/moving_frame_1.png',
+	'../../../static/assets/pong/moving_frame_2.png',
+	'../../../static/assets/pong/moving_frame_3.png',
+	'../../../static/assets/pong/moving_frame_4.png',
+	'../../../static/assets/pong/moving_frame_5.png',
+	'../../../static/assets/pong/moving_frame_6.png',
+	'../../../static/assets/pong/moving_frame_7.png',
+	'../../../static/assets/pong/moving_frame_8.png',
+	'../../../static/assets/pong/moving_frame_9.png',
 ];
 
-const paddleBodyImages = paddleBodyAnimationFrames.map((src) => {
-    const img = new Image();
-    img.src = src;
-    return img;
-});
+let paddleBodyImages;
 
 let currentBodyFrame = 0;
 let animationIntervalID = null;
-
-function startBodyAnimation() {
-    if (animationIntervalID) return;
-
-    animationIntervalID = setInterval(() => {
-        currentBodyFrame = (currentBodyFrame + 1) % paddleBodyImages.length;
-    }, 100); 
-}
-
-function stopBodyAnimation() {
-    if (animationIntervalID) {
-        clearInterval(animationIntervalID);
-        animationIntervalID = null;
-        currentBodyFrame = 0;
-    }
-}
 
 const paddleWidth = 56;
 const paddleHeight = 66;
@@ -133,12 +89,57 @@ let player2Force;
 let player2Speed;
 let player2Character;
 
+function loadImages(characterNames) {
+    const images = {};
+
+    characterNames.forEach(name => {
+        images[name] = {
+            front: new Image(),
+            back: new Image(),
+            left: new Image(),
+            right: new Image(),
+        };
+        images[name].front.src = `../../../static/assets/pong/head/${name}_front.png`;
+        images[name].back.src = `../../../static/assets/pong/head/${name}_back.png`;
+        images[name].left.src = `../../../static/assets/pong/head/${name}_left.png`;
+        images[name].right.src = `../../../static/assets/pong/head/${name}_right.png`;
+    });
+    return images;
+}
+
+function startBodyAnimation() {
+    if (animationIntervalID) return;
+
+    animationIntervalID = setInterval(() => {
+        currentBodyFrame = (currentBodyFrame + 1) % paddleBodyImages.length;
+    }, 100); 
+}
+
+function stopBodyAnimation() {
+    if (animationIntervalID) {
+        clearInterval(animationIntervalID);
+        animationIntervalID = null;
+        currentBodyFrame = 0;
+    }
+}
+
+let mapSkin;
 
 function drawBackground() {
     backgroundCtx.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 
+	let backgroundPath
+
+    if (mapSkin == 'map3')
+        backgroundPath = '../../../static/assets/background/pongBG3.png';
+    else if (mapSkin == 'map2')
+        backgroundPath = '../.././static/assets/background/pongBG2.png';
+    else 
+        backgroundPath = '../../../static/assets/background/pongBG1.png';
+
+
     const backgroundImage = new Image();
-    backgroundImage.src = '../../../static/assets/background/pongBG2.png'	;
+    backgroundImage.src = backgroundPath;
     backgroundImage.onload = () => {
         backgroundCtx.drawImage(backgroundImage, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
     };
@@ -249,10 +250,10 @@ function draw(interpolatedState) {
 
     ctx.drawImage(
         headPlayer1,
-        5,
-        interpolatedState.paddle1Y,
-        56,
-		characterImages[player1Name].right.height
+        -2,
+        interpolatedState.paddle1Y - 6,
+        70,
+		67
     );
 
     // Paddle 2 logic
@@ -279,10 +280,10 @@ function draw(interpolatedState) {
 
     ctx.drawImage(
         headPlayer2,
-        canvas.width - paddleWidth - 10,
-        interpolatedState.paddle2Y,
-		56,
-		characterImages[player2Name].right.height
+        canvas.width - paddleWidth - 17,
+        interpolatedState.paddle2Y - 6,
+		70,
+		67
     );
 
     // Draw the ball
@@ -313,10 +314,10 @@ function draw_reset() {
     );
     ctx.drawImage(
         characterImages[player1Name].right,
-        5,
-        (canvas.height - paddleHeight) / 2,
-        characterImages[player1Name].right.width,
-        characterImages[player1Name].right.height
+        -2,
+        (canvas.height - paddleHeight) / 2 - 6,
+        70,
+        67
     );
 
     ctx.drawImage(
@@ -328,10 +329,10 @@ function draw_reset() {
     );
     ctx.drawImage(
         characterImages[player2Name].left,
-        canvas.width - paddleWidth - 10,
-        (canvas.height - paddleHeight) / 2,
-        characterImages[player2Name].left.width,
-        characterImages[player2Name].left.height
+        canvas.width - paddleWidth - 17,
+        (canvas.height - paddleHeight) / 2 - 6,
+        70,
+        67
     );
 
     ctx.drawImage(
@@ -359,10 +360,20 @@ function interpolateGameState(currentTime) {
 	else if (paddle1movedown)
 		nextpaddle1Y += paddle1speed * t;
 
+	if (nextpaddle1Y < 0)
+		nextpaddle1Y = 0;
+	if (nextpaddle1Y + paddleHeight > 400)
+		nextpaddle1Y = 400 - paddleHeight;
+
 	if (paddle2moveup)
 		nextpaddle2Y -= paddle2speed * t;
 	else if (paddle2movedown)
 		nextpaddle2Y += paddle2speed * t;
+
+	if (nextpaddle2Y < 0)
+		nextpaddle2Y = 0;
+	if (nextpaddle2Y + paddleHeight > 400)
+		nextpaddle2Y = 400 - paddleHeight;
 
 	const interpolatedState = {
 		ballX: lastGameState.ball.x + ballspeedX * t,
@@ -433,9 +444,8 @@ function closeButton()
 	
 	parentDiv.appendChild(buttonDiv)
 	document.getElementById('button-return').addEventListener('click', function() {
-        window.location.href = '/character';
-    });
-
+		router.navigate("/character");
+	});
 }
 
 class PongSocket {
@@ -539,6 +549,41 @@ async function get_game_players(game_id) {
 }
 
 export async function initComponent() {
+	canvas = document.getElementById("pongCanvas");
+	ctx = canvas.getContext("2d");
+
+	backgroundCanvas = document.getElementById("backgroundCanvas");
+	backgroundCtx = backgroundCanvas.getContext("2d");
+
+	lifeCanvas = document.getElementById("lifeCanvas");
+	lifeCtx = lifeCanvas.getContext("2d");
+
+	heartImage = new Image();
+	heartImage.src = '../../../static/assets/pong/heart.png';
+	heartEmptyImage = new Image();
+	heartEmptyImage.src = '../../../static/assets/pong/heart_empty.png'; 
+
+	ballImage = new Image();
+	ballImage.src = '../../../static/assets/pong/bullet.png';
+
+	idleImage = new Image();
+	idleImage.src = '../../../static/assets/pong/resting.png';
+	idleImageLeft = new Image();
+	idleImageLeft.src = '../../../static/assets/pong/resting_left.png';
+
+	boot = new Image();
+	boot.src = '../../../static/assets/pong/boot.png'
+	sword = new Image();
+	sword.src = '../../../static/assets/pong/sword.png'
+
+	characterImages = loadImages(characterMap);
+
+	paddleBodyImages = paddleBodyAnimationFrames.map((src) => {
+		const img = new Image();
+		img.src = src;
+		return img;
+	});
+
 	paddle1Y = (canvas.height - paddleHeight) / 2;
 	paddle2Y = (canvas.height - paddleHeight) / 2;
 	paddle1speed = 4;
@@ -554,13 +599,21 @@ export async function initComponent() {
 	player1Score = 0;
 	player2Score = 0;
 	player1InitialScore = 0;
+	player1Force= 0;
+	player1Speed= 0;
 	player2InitialScore = 0;
+	player2Force= 0;
+	player2Speed= 0;
 	player1Character = 0;
 	player2Character = 0;
 
 	lastUpdateTime = Date.now();
 	lastGameState = null;
 
+	game_ended = false;
+	game_started = false;
+	
+	await new Promise((resolve, reject) => setTimeout(resolve, 100));
 	const user = await get_user();
 	if (!user)
 		router.navigate('/login?return=/pong');
@@ -570,6 +623,7 @@ export async function initComponent() {
 	const urlParams = new URLSearchParams(window.location.search);
 	const game_room = urlParams.get('game_room');
 	const game_id = urlParams.get('game_id');
+	mapSkin =  urlParams.get('map');
 	if (!game_room || !game_id)
 		router.navigate('/pong');
 
@@ -599,7 +653,7 @@ export async function initComponent() {
 	gameLoop();
 }
 
-export function cleanupComponent() {
+export async function cleanupComponent() {
 	if (pingIntervalID) {
 		clearInterval(pingIntervalID);
 		pingIntervalID = null;
@@ -610,14 +664,15 @@ export function cleanupComponent() {
 		socket = null;
 	}
 
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	game_ended = true;
 
 	stopPaddleAnimation();
-
 
 	document.removeEventListener('keydown', handleKeydown);
 	document.removeEventListener('keyup', handleKeyup);
 
 	deleteCookie('user');
 	deleteCookie('access_token');
+
+	await refresh_user();
 }

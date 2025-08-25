@@ -153,7 +153,7 @@ async function chat_add_user() {
 	<h3>Group configuration</h3>
 	<div id="user-add-remove-block">
 		<div id="chat-add-user">
-			<input id="button-add-user" type="button" value="Add user">
+			<input id="button-add-user" type="button" value="ADD USER">
 		</div>
 	</div>
    	<input id="chat-user-input" type="text" size="100" placeholder="username">
@@ -279,7 +279,6 @@ async function update_room(event) {
 }
 
 async function chat_close(params) {
-    const chat_box = document.querySelector('.chat-block');
     const middle_block = document.querySelector(".middle");
     middle_block.innerHTML =`
     <div class="chat-block"></div>
@@ -362,7 +361,7 @@ async function open_chat_info(room, room_picture) {
 
 	const room_info = document.querySelector('.room-info');
 	room_info.innerHTML = `
-	<h1>Group info</h1>
+	<h1>GROUP INFO</h1>
 	<div class="leave-room">
 		<input id="chat-message-leave" type="button" value="leave chat">
 	</div>
@@ -375,10 +374,10 @@ async function open_conf() {
 		<h3>Group configuration</h3>
 		<div id="user-add-remove-block">
 			<div id="chat-add-user">
-				<input id="button-add-user" type="button" value="Add user">
+				<input id="button-add-user" type="button" value="ADD USER">
 			</div>
 			<div id="chat-remove-user">
-				<input id="button-remove-user" type="button" value="Remove user">
+				<input id="button-remove-user" type="button" value="REMOVE USER">
 			</div>
 		</div>
         <form id="roomConfForm" class="room__form">
@@ -390,8 +389,8 @@ async function open_conf() {
 				<input type="file" class="room_picture" name="room_picture" accept="image/*">
 			</div>
 			<div id="submit-delete-block">
-				<button type="submit" id="submit-edit">Update</button>
-				<input id="chat-delete" type="button" value="Delete">
+				<button type="submit" id="submit-edit">UPDATE</button>
+				<input id="chat-delete" type="button" value="DELETE">
 			</div>
 	    </form>
         <input id="chat-conf-close" type="button" value="Close conf chat" style="display:none;">
@@ -571,7 +570,7 @@ async function open_chat(room_selected) {
             chat_log.scrollTop = chat_log.scrollHeight;
         }
 		else if (data.type == 'error') {
-			customalert('error !', 'Message too longs', true);
+			customalert('error !', data.message, true);
 		}
     };
     
@@ -710,9 +709,8 @@ async function print_invitations() {
         }
 }
 
-async function mp_somebody(user_id) {
+export async function mp_somebody(user_id) {
 
-    console.log("mp function");
     const response = await fetch(config.backendUrl + "/chat/room/" + 0, {
         method: "POST",
         headers: {
@@ -727,41 +725,31 @@ async function mp_somebody(user_id) {
     const data = await response.json();
     if (response.status === 200)
     {
-        console.log(data["room_status"])
-        print_chats();
+        customalert("Success", "invitation send", false);
         return ;
     }
     else if (response.status === 303 || response.status === 404 ||response.status === 403 ||response.status === 400)
     {
-        console.log("error mp: ", data["error"]);
+        customalert("Error", data['error'], true);
         return;
     }
     return;
 }
 
 export async function initComponent(params) {
+    await new Promise((resolve, reject) => setTimeout(resolve, 100));
     user = await get_user();
     if (!user)
-        router.navigate('/login');
+        router.navigate('/');
+    setInterval(async ()=>{
+        user = await get_user();
+        if (!user)
+            router.navigate('/');
+    }, 1000 * 60);
     print_chats();
     print_invitations();
     const create_room_btn = document.querySelector('.create-room');
     create_room_btn.addEventListener('click', create_room);
-
-	// document.getElementById('user-search').addEventListener('input', async function() {
-	// 	const query = this.value;
-	// 	if (query.length > 0) {
-	// 		const response = await searchUsers(query, 5);
-	// 		if (response.status === 200) {
-	// 			const data = await response.json();
-	// 			updateUserList(data.users);
-	// 		} else {
-	// 			updateUserList([]);
-	// 		}
-	// 	} else {
-	// 		updateUserList([]);
-	// 	}
-	// });
 }
 
 export async function cleanupComponent(params) {
@@ -799,7 +787,7 @@ function open_invitation(room_l) {
 	const room_info = document.querySelector('.room-info');
 
 	room_info.innerHTML = `
-	<h1>Group info</h1>
+	<h1>GROUP INFO</h1>
 	<div class="leave-room"><div>
 	`
 	print_member(room);
@@ -816,13 +804,13 @@ function print_member(room) {
 		if (room.created_by && user.username == room.created_by.username)
 		{
 			userItem.innerHTML = `
-				<span class="room-pic"> <img src="${profile_picture}" height=100 alt="Room Picture"> </span> 
-				<span class="room-name-left">${user.username} (admin)</span>
+				<span class="room-pic" href="/account?id=${user.id}" data-link> <img src="${profile_picture}" height=100 alt="Room Picture"> </span> 
+				<span class="room-name-left" href="/account?id=${user.id}" data-link>${user.username} (admin)</span>
 			`;
 		}
 		else {
 			userItem.innerHTML = `
-				<span class="room-pic"> <img src="${profile_picture}" height=100 alt="Room Picture"> </span> 
+				<span class="room-pic" href="/account?id=${user.id}" data-link> <img src="${profile_picture}" height=100 alt="Room Picture"> </span> 
 				<span class="room-name-left">${user.username}</span>
 			`;
 		}

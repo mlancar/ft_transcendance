@@ -5,19 +5,19 @@ import { router } from '../../app.js';
 import { handleDeleteAccount  } from '../../routes/user/edit/script.js';
 import { deleteCookie, setCookie } from '../../../components/storage/script.js';
 import { getQrcode, enable2FA } from '../user/2FA/script.js';
+import { mp_somebody } from '../chat/script.js';
+
+let editMode = false;
 
 function displayUser(user)
 {
 	const username = user.username;
 	const email = user.email;
-	// const profilePicture = user.pictureRemote ? user.pictureRemote : config.backendUrl + user.profilePicture;
 	const profilePicture = user.picture_remote ? user.picture_remote : config.backendUrl + user.profile_picture;
 
 	var profilePictureContainer = document.querySelector("#profile-picture");
 
 	if (profilePictureContainer) {
-		console.log("profile picture", profilePicture);
-
 		let imgElement = document.querySelector('#profile-picture img');
 		imgElement.src = profilePicture;
 	}
@@ -45,6 +45,8 @@ function setUser(user, inviteOrEditButton, blockOrDeleteButton, twofaOrAddFriend
 	document.querySelector("#edit-logo-right").src = "../../static/assets/header/chat.png"
 	blockOrDeleteButton.textContent = "BLOCK USER";
 	twofaOrAddFriend.textContent = "ADD FRIEND";
+	document.querySelector("#logo-left").src = "../../static/assets/header/friend.png";
+	document.querySelector("#logo-right").src = "../../static/assets/header/friend.png";
 	document.querySelector("#label-email").style.display = "none";
 	document.querySelector(".label").style.display = "none";
 	document.querySelector("#who span").textContent = "THEM";
@@ -78,7 +80,7 @@ export async function initComponent() {
 	let me = await get_user();
 	if (!me) {
 		customalert('Error', 'You are not logged in', true);
-		router.navigate('/login?return=/user');
+		router.navigate('/');
 	}
 	const urlparams = new URLSearchParams(window.location.search);
 	const id = urlparams.get('id');
@@ -100,37 +102,55 @@ export async function initComponent() {
 			router.navigate('/');
 		}
 		user = data
+		document.querySelector("#friends-sheet").style.display = "none";
 	}
 	var twofa;
 	const inviteOrEditButton = document.querySelector("#edit-profile span");
 	const blockOrDeleteButton = document.querySelector("#delete-profile span");
 	const twofaOrAddFriend = document.querySelector("#friend-or-2fa span");
+	document.getElementById("stats-link").addEventListener("click", (e) => {
+		if (user)
+			router.navigate("/stats?id=" + user.user.id);
+		else
+			router.navigate("/stats");
+	});
 
+	document.querySelector("#friends-sheet").addEventListener("click", (e) => {
+		router.navigate("/friends");
+	});
+	
 	if (user)
 		setUser(user.user, inviteOrEditButton, blockOrDeleteButton, twofaOrAddFriend);
 	else
 		setPersonalUser(me);
 
+	
 
-	document.getElementById("edit-password").addEventListener('submit', handleFormPassword);
-	document.getElementById("username-form").addEventListener('submit', handleFormUsername);
+	document.getElementById("edit-password").addEventListener('submit', function(event) {
+		handleFormPassword(event, editPasswordButton, editPassword);
+	});
+
+	document.getElementById("username-form").addEventListener('submit', function(event) {
+		handleFormUsername(event, labelUsername, editUsernameButton, usernameForm);
+	});
+
 	document.querySelector("#profile-picture-container input").addEventListener('change', handleFormProfilePicture);
-
 	
 	const editProfilePicture = document.querySelector("#profile-picture-container label");
 	const password = document.querySelector("#edit-password");
 	
-	inviteOrEditButton.addEventListener("click", function() {
+	inviteOrEditButton.addEventListener("click", async function() {
 		if (id) {
-			console.log("invite to chat");
+			await mp_somebody(id);
 	
 		}
-		else {
-			console.log("edit profile");
+		else if (!editMode) {
+			editMode = true;
 			editUsernameButton.style.display = "flex";
 			password.style.display = "flex";
 			editProfilePicture.style.display = "flex";
 		}
+
 	});
 	
 	const popin = document.getElementById("popin");
@@ -142,7 +162,6 @@ export async function initComponent() {
 	const generateQrcode = document.querySelector("#generate-qrcode");
 
 	blockOrDeleteButton.addEventListener("click", function() {
-		console.log("delete button");
 		popin.style.display = "flex";
 	});
 
@@ -176,12 +195,10 @@ export async function initComponent() {
 	});
 
 	document.querySelector("#submit-code").addEventListener("click", function() {
-		console.log("submit button");
 		enable2FA();
 	});
 
 	logoutButton.addEventListener("click", function() {
-		console.log("logout button");
 		logout();
 		router.navigate('/');
 	});
@@ -191,7 +208,6 @@ export async function initComponent() {
 	const labelPassword = document.querySelector("#edit-password  .label");
 
 	editPasswordButton.addEventListener("click", function() {
-		console.log("edit password");
 		labelPassword.style.display = "none";
 		editPasswordButton.style.display = "none";
 		editPassword.style.display = "flex";
@@ -202,11 +218,15 @@ export async function initComponent() {
 	const labelUsername = document.querySelector("#username .label");
 
 	editUsernameButton.addEventListener("click", function() {
-		console.log("edit username");
-		
 		labelUsername.style.display = "none";
 		editUsernameButton.style.display = "none";
 		usernameForm.style.display = "flex";
+	});
+
+	document.querySelectorAll("#qrcode-content .close-button").forEach(button => {
+		button.addEventListener("click", function() {
+			popin.style.display = "none";
+		});
 	});
 
 }
@@ -229,12 +249,9 @@ async function addFriend(id) {
 }
 
 async function handleFormProfilePicture(event) {
-	console.log("EDIT PROFILE PICTURE");
-
 	event.preventDefault();
 	const form = document.querySelector("#profile-picture-container form");
 	const formData = new FormData(form);
-	console.log(formData);
 
 	try {
         let response = await update_user(formData);
@@ -264,19 +281,16 @@ function updateProfilePicture(user) {
 	imgElement.src = profilePicture + '?t=' + new Date().getTime();
 }
 
-async function changeDisplayUsername() {
+async function changeDisplayUsername(labelUsername, editUsernameButton, usernameForm) {
 	labelUsername.style.display = "flex";
 	editUsernameButton.style.display = "flex";
 	usernameForm.style.display = "none";
 }
 
-async function handleFormUsername(event) {
-	console.log("EDIT USERNAME");
-
+async function handleFormUsername(event, labelUsername, editUsernameButton, usernameForm) {
 	event.preventDefault();
 	const form = document.querySelector("#username-form")
 	const formData = new FormData(form);
-	console.log(formData);
 	let response = await update_user(formData);
 	if (response.status === 200) {
 		customalert('Success', 'User updated successfully', false);
@@ -284,7 +298,7 @@ async function handleFormUsername(event) {
 		setPersonalUser(data.user);
 		deleteCookie('user');
 		setCookie('user', JSON.stringify(data.user), 5 / 1440);
-		changeDisplayUsername();
+		changeDisplayUsername(labelUsername, editUsernameButton, usernameForm);
 	}
 	else {
 		let data = await response.json();
@@ -292,16 +306,13 @@ async function handleFormUsername(event) {
 	}
 }
 
-async function changeDisplayPassword() {
-	// inputPassword.style.display = "flex";
+async function changeDisplayPassword(editPasswordButton, editPassword) {
 	editPasswordButton.style.display = "none";
 	editPassword.style.display = "none";
 }
 
 
-async function handleFormPassword(event) {
-	console.log("EDIT PASSWORD");
-
+async function handleFormPassword(event, editPasswordButton, editPassword) {
 	event.preventDefault();
 	const form = document.querySelector("#edit-password form");
 	const formData = new FormData(form);
@@ -319,19 +330,13 @@ async function handleFormPassword(event) {
 
 	if (response.status === 200) {
 		customalert('Success', 'Password updated successfully', false);
-		// let data = await response.json();
-		// setPersonalUser(data.user);
-		// deleteCookie('user');
-		// setCookie('user', JSON.stringify(data.user), 5 / 1440);
-		changeDisplayPassword();
+		changeDisplayPassword(editPasswordButton, editPassword);
 	}
 	else {
 		let data = await response.json();
 		customalert('Error', data.error, true);
 	}
 }
-
-// const deleteButton = document.querySelector("#delete-profile .buttons");
 
 async function deleteOrBlock(id, popin) {
 	try {

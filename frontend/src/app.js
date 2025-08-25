@@ -1,5 +1,6 @@
-import { getCookie } from "./components/storage/script.js";
-import { refresh_token } from "./components/user/script.js";
+import { deleteCookie, getCookie } from "./components/storage/script.js";
+import { get_user, refresh_token, refresh_user } from "./components/user/script.js";
+import config from "./env/config.js";
 
 class Router {
 	constructor() {
@@ -8,6 +9,8 @@ class Router {
 		this.componentsscripts = [];
 		this.componentsstyles = [];
 		this.activeScripts = [];
+		this.loaded = document.getElementById("loaded");
+		this.socket = null;
 	}
 
 	async initRouter() {
@@ -37,18 +40,39 @@ class Router {
 	}
 
 	async _loadInitialRoute() {
+		this.connect();
 		const pathName = window.location.pathname;
 		await this._loadRoute(pathName);
 	}
 
+	async connect() {
+		if (this.socket == null)
+		{
+			this.socket = new WebSocket(config.websocketurl + "/ws/user/status/");
+			this.socket.onmessage = async (e) => {
+				const data = JSON.parse(e.data);
+				if (data.type == "success") await refresh_user();
+			}
+		}
+	}
+
+	async disconnect() {
+		if (this.socket) {
+			this.socket.close();
+			this.socket = null;
+		}
+	}
+
 	async navigate(pathName) {
-		// Update the URL without refreshing the page
+		if (pathName == null) return;
 		history.pushState({}, '', pathName);
 		await this._loadRoute(pathName);
 	}
 
 	async _loadRoute(pathName) {
-		if (getCookie("access_token") == null && getCookie("refresh_token") != null) await refresh_token();
+		document.querySelector('#app').style.display = "none";
+		this.loaded.style.display = "block";
+		if (getCookie("user") == null) await refresh_token();
 		let route = this.routes.find(r => r.path === pathName.split('?')[0] || r.path + '/' === pathName.split('?')[0]);
 		if (!route) {
 			route = this.routes.find(r => r.path === '/404');
@@ -90,6 +114,10 @@ class Router {
 		} catch (error) {
 			console.error(`Error loading route "${pathName}":`, error);
 		}
+		setTimeout(() =>{
+			this.loaded.style.display = "none";
+			document.querySelector('#app').style.display = "block";
+		}, 50);
 	}
 
 	async _loadComponentsHtml(html) {

@@ -1,6 +1,6 @@
 @font-face {
-  font-family: isaac-bold;
-  src: url("../assets/font/isaac_bold.ttf");
+  font-family: isaac;
+  src: url("../assets/font/isaac.ttf");
 }
 body {
   background-image: url("../assets/images/account/background_account.png");
@@ -13,7 +13,7 @@ body #page {
   height: 100%;
 }
 body #page .text {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #332C2B;
 }
 body #page button {
@@ -45,6 +45,50 @@ body #page #background #container {
   width: 100%;
   height: 100%;
 }
+body #page #background #container #stats-sheet {
+  position: absolute;
+  left: -14%;
+  top: 58%;
+  rotate: -15deg;
+  font-family: isaac;
+  width: 6%;
+}
+body #page #background #container #stats-sheet span {
+  position: relative;
+  z-index: 5;
+  top: 40%;
+  left: 20%;
+  font-size: 1.7vw;
+  display: inline-block;
+  transform: rotate(-77deg);
+  transition: transform 0.3s ease;
+}
+body #page #background #container #stats-sheet span:hover {
+  transform: rotate(-77deg) scale(1.2);
+  cursor: pointer;
+}
+body #page #background #container #friends-sheet {
+  position: absolute;
+  left: 1%;
+  top: 81%;
+  rotate: -9deg;
+  font-family: isaac;
+  width: 6%;
+}
+body #page #background #container #friends-sheet span {
+  position: absolute;
+  z-index: 5;
+  top: 41%;
+  right: 0%;
+  font-size: 1.7vw;
+  display: inline-block;
+  transform: rotate(-77deg);
+  transition: transform 0.3s ease;
+}
+body #page #background #container #friends-sheet span:hover {
+  transform: rotate(-77deg) scale(1.2);
+  cursor: pointer;
+}
 body #page #background #container .buttons {
   transition: transform 0.3s ease;
   background-color: transparent;
@@ -53,63 +97,13 @@ body #page #background #container .buttons {
 body #page #background #container .buttons:hover {
   transform: scale(1.2);
 }
-body #page #background #container #matchList {
-  font-size: 0.7rem;
-  position: absolute;
-  left: 100px;
-  font-family: isaac-bold;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: auto;
-  max-height: 300px;
-  overflow-y: scroll;
-}
-body #page #background #container #matchList::-webkit-scrollbar {
-  display: none;
-}
-body #page #background #container #matchList .Matchline {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-body #page #background #container #matchList .Matchline .player-left {
-  text-align: left;
-  width: 90px;
-  height: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-right: 20px;
-  display: flex;
-  align-items: center;
-}
-body #page #background #container #matchList .Matchline .player-right {
-  text-align: right;
-  width: 90px;
-  height: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-left: 20px;
-  display: flex;
-  align-items: center;
-}
-body #page #background #container #logout-sheet {
-  width: 19%;
-  position: absolute;
-  top: 57%;
-  left: 70%;
-}
 body #page #background #container #logout {
   position: absolute;
-  rotate: -6deg;
-  left: 71%;
-  top: 59%;
-  width: 16%;
-  aspect-ratio: 95/67;
+  left: 63%;
+  top: -5%;
+  width: 31%;
+  height: 7%;
+  rotate: -7deg;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -117,10 +111,13 @@ body #page #background #container #logout {
   padding-left: 1%;
 }
 body #page #background #container #logout span {
-  font-size: 1.6vw;
+  font-size: 1.2vw;
 }
 body #page #background #container #logout button img {
-  width: 60%;
+  width: 100%;
+}
+body #page #background #container #logout button:hover {
+  transform: scale(1);
 }
 body #page #background #container #sheet {
   display: flex;
@@ -137,12 +134,18 @@ body #page #background #container #sheet #sheet-image {
 body #page #background #container #sheet #who {
   font-size: 1.8vw;
   position: absolute;
-  top: 0vh;
+  top: 4.2vh;
   left: 11vw;
+}
+body #page #background #container #sheet #who img {
+  position: absolute;
+  top: 36%;
+  left: 115%;
+  width: 50%;
 }
 body #page #background #container #sheet #main-page {
   position: absolute;
-  left: 9%;
+  left: 12%;
   top: 4%;
   width: 63%;
   height: 80%;
@@ -195,6 +198,7 @@ body #page #background #container #sheet #main-page #user-info #current-info .ed
 }
 body #page #background #container #sheet #main-page #user-info #current-info #username {
   display: flex;
+  white-space: nowrap;
 }
 body #page #background #container #sheet #main-page #user-info #current-info #username button {
   display: none;
@@ -296,15 +300,15 @@ body #page #background #container #sheet #friend-or-2fa #edit-logo-left {
 }
 body #page #background #container #sheet #profile-picture-container {
   position: absolute;
-  top: 11%;
-  left: 31%;
-  width: 41%;
-  height: 23%;
+  top: 17%;
+  left: 42%;
+  width: 20%;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 body #page #background #container #sheet #profile-picture-container #profile-picture {
-  width: 73%;
+  width: 100%;
 }
 body #page #background #container #sheet #profile-picture-container #profile-picture img {
   width: 100%;
@@ -312,8 +316,8 @@ body #page #background #container #sheet #profile-picture-container #profile-pic
 body #page #background #container #sheet #profile-picture-container form label {
   display: none;
   position: absolute;
-  top: 88%;
-  left: 86%;
+  top: 95%;
+  left: 97%;
   width: 17%;
 }
 body #page #background #container #sheet #profile-picture-container form label img {
@@ -369,7 +373,7 @@ body #page #background #popin #confirmation-content button {
 body #page #background #popin #confirmation-content span {
   position: absolute;
   top: 20%;
-  left: 10%;
+  left: 17%;
   font-size: 2.8vw;
 }
 body #page #background #popin #confirmation-content .button-popin:hover {
@@ -394,18 +398,18 @@ body #page #background #popin #qrcode-content {
 body #page #background #popin #qrcode-content button {
   transition: transform 0.3s ease;
 }
-body #page #background #popin #qrcode-content #close-button {
-  background-image: url(../static/assets/login/cross.png);
+body #page #background #popin #qrcode-content .close-button {
+  background-image: url(../../static/assets/login/cross.png);
   background-repeat: no-repeat;
   background-size: contain;
-  background-color: transparent;
   position: absolute;
-  top: 17%;
-  right: 6%;
+  top: 5%;
+  right: 0%;
   cursor: pointer;
-  height: 4%;
+  height: 8%;
   width: 4%;
   border: none;
+  z-index: 11111111;
 }
 body #page #background #popin #qrcode-content span {
   overflow-wrap: break-word;
@@ -420,12 +424,18 @@ body #page #background #popin #qrcode-content #generate-qrcode {
   display: flex;
   align-items: center;
   font-size: 1.8vw;
+  position: absolute;
+  top: 41%;
+  left: 7%;
 }
 body #page #background #popin #qrcode-content .qrcode {
   display: none;
   flex-direction: row-reverse;
   align-items: center;
   width: 100%;
+}
+body #page #background #popin #qrcode-content .qrcode button {
+  z-index: 3;
 }
 body #page #background #popin #qrcode-content .qrcode #submit-code {
   position: absolute;

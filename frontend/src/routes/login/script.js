@@ -5,6 +5,7 @@ import config from '../../env/config.js';
 import { setCookie } from '../../components/storage/script.js';
 
 export async function initComponent() {
+	await new Promise((resolve, reject) => setTimeout(resolve, 100));
 	const user = await get_user();
 
 	const logindiv = document.querySelector('.login');
@@ -138,5 +139,5 @@ async function logout_form(event) {
 	event.preventDefault();
 	await logout();
 	customalert('Logout successful', 'You are now logged out');
-	router.navigate('/login');
+	router.navigate('/');
 }

@@ -22,12 +22,24 @@ const paddleWidth = 10;
 const paddleHeight = 75;
 const ballRadius = 8;
 
+let mapSkin;
 
-function drawBackground() {
+async function drawBackground() {
+    
     backgroundCtx.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 
+
+    let backgroundPath
+
+    if (mapSkin == 'map3')
+        backgroundPath = '../../../static/assets/background/pongBG3.png';
+    else if (mapSkin == 'map2')
+        backgroundPath = '../.././static/assets/background/pongBG2.png';
+    else 
+        backgroundPath = '../../../static/assets/background/pongBG1.png';
+
     const backgroundImage = new Image();
-    backgroundImage.src = '../../../static/assets/background/pongBG2.png';
+    backgroundImage.src = backgroundPath;
     backgroundImage.onload = () => {
         backgroundCtx.drawImage(backgroundImage, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
     };
@@ -89,8 +101,8 @@ class PongGame {
     async gameStart() {
         this.game_ended = false;
 
-        this.player1Score = 1;
-        this.player2Score = 1;
+        this.player1Score = 3;
+        this.player2Score = 3;
 
         this.paddle1Y = (canvas.height - paddleHeight) / 2;
         this.paddle2Y = (canvas.height - paddleHeight) / 2;
@@ -292,6 +304,7 @@ function RectCircleColliding(circle, rect) {
 
 let players = [];
 
+
 class Match {
     constructor(player1 = null, player2 = null, winner = null, loser = null) {
         this.player1 = player1;
@@ -355,7 +368,7 @@ class Tournament {
         return this.buildMatches(nextRound);
     }
 
-    async playMatch(match) {
+    async playMatch(match, finalMatch) {
         if (!match || (!match.player1 && !match.player2)) {
             return null;
         }
@@ -380,7 +393,10 @@ class Tournament {
 			const playerLeftResult = document.createElement('div');
 			const playerRightResult = document.createElement('div');
 			
-			const [leftClass, rightClass] = match.winner == match.player1 ? ['win', 'lost'] : ['lost', 'win'];
+			let [leftClass, rightClass] = match.winner == match.player1 ? ['win', 'lost'] : ['lost', 'win'];
+            if (finalMatch) {
+                [leftClass, rightClass] = match.winner == match.player1 ? ['topWin', 'lost'] : ['lost', 'topWin'];
+            }
 			
 			playerLeftResult.classList.add(leftClass);
 			playerRightResult.classList.add(rightClass);
@@ -392,7 +408,7 @@ class Tournament {
 
             await new Promise(resolve => setTimeout(resolve, 3500))
 			.then(() => {
-				console.log('5 seconds have passed');
+				console.log('3.5 seconds have passed');
 			  });
         }
         return match.winner;
@@ -404,22 +420,30 @@ class Tournament {
         if (match.left) match.player1 = await this.playTournament(match.left);
         if (match.right) match.player2 = await this.playTournament(match.right);
 
-		const player1div = document.getElementById("player1");
-		const player2div = document.getElementById("player2");
-		const matchList = document.getElementById("matchList");
+        if (match.player1 && match.player2)
+        {
+            const player1div = document.getElementById("player1");
+            const player2div = document.getElementById("player2");
+            const matchList = document.getElementById("matchList");
 
-		player1div.innerText = match.player1;
-		player2div.innerText = match.player2;
+            player1div.innerText = match.player1;
+            player2div.innerText = match.player2;
 
-		const matchHTML = `
-		<div class="Matchline">
-			<div class="player-left">${match.player1}</div>
-			<div class="player-right">${match.player2}</div>
-		</div>
-		`;
-		matchList.innerHTML += matchHTML;
+            const matchHTML = `
+            <div class="Matchline">
+                <div class="player-left">${match.player1}</div>
+                <div class="player-right">${match.player2}</div>
+            </div>
+            `;
+            matchList.innerHTML += matchHTML;
+        }
 
-        return await this.playMatch(match);
+        let finalMatch = false;
+
+        if (match === this.root) {
+            finalMatch = true;
+        }
+        return await this.playMatch(match, finalMatch);
     }
 }
 
@@ -442,6 +466,8 @@ function closeButton()
 export async function initComponent() {
     const urlParams = new URLSearchParams(window.location.search);
     players = urlParams.get('players').split(',');
+    mapSkin =  urlParams.get('map');
+
     players.forEach(player => {
         if (player.length ===0) {
             customalert("Error", "Player name cannot be empty.");
@@ -455,8 +481,8 @@ export async function initComponent() {
 
 	const tournament = new Tournament(players);
 
-	centerPongCanvas();
 	drawBackground();
+	centerPongCanvas();
 	ballImage.onload = function() {
 		draw_reset();
 	};

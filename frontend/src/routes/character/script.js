@@ -1,4 +1,7 @@
 import { router } from "../../app.js";
+import { customalert } from '../../components/alert/script.js';
+import { get_user } from "../../components/user/script.js";
+
 
 let carousel;
 let	item_a;
@@ -142,6 +145,12 @@ function rotate(e)
 }
 
 export async function initComponent() {
+	await new Promise((resolve, reject) => setTimeout(resolve, 100));
+	const user = await get_user();
+	if (!user) {
+		customalert('Error', 'You are not logged in', true);
+		router.navigate('/');
+	}
 	carousel = $(".carousel");
 	item_a = $(".item_a");
 	item_b = $(".item_b");

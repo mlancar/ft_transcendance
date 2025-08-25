@@ -61,10 +61,11 @@ export async function getQrcode() {
 }
 
 export async function initComponent() {
+	await new Promise((resolve, reject) => setTimeout(resolve, 100));
 	let user = await get_user();
 	if (!user) {
 		customalert('Error', 'You are not logged in', true);
-		router.navigate('/login?return=/user/edit');
+		router.navigate('/');
 	}
 	const button_qr_code = document.getElementById('gen-qrcode');
 	button_qr_code.addEventListener('click', getQrcode);

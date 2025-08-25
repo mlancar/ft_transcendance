@@ -7,6 +7,7 @@ import config from '../env/config.js';
 let isLoggedIn;
 
 export async function initComponent() {
+	await new Promise(r => setTimeout(r, 100));
 	const user = await get_user();
 	
 	const accountButton = document.querySelector("#account");
@@ -61,6 +62,8 @@ export async function initComponent() {
 		if (!isLoggedIn) {
 			customalert("Error", "Please login", 1);
 			event.preventDefault();
+			event.stopPropagation();
+
 		}
 	});
 
@@ -68,6 +71,7 @@ export async function initComponent() {
 		if (!isLoggedIn) {
 			customalert("Error", "Please login", 1);
 			event.preventDefault();
+			event.stopPropagation();
 		}
 	});
 
@@ -75,6 +79,7 @@ export async function initComponent() {
 		if (!isLoggedIn) {
 			customalert("Error", "Please login", 1);
 			event.preventDefault();
+			event.stopPropagation();
 		}
 	});
 
@@ -151,7 +156,6 @@ async function login_form(event, loginPopin, popin, loginForm, qrcodePopin) {
 		document.querySelector("#title").textContent = "2FA";
 
 		document.querySelector("#submit-code").addEventListener("click", function() {
-			console.log("submit button");
 			form_2fa(event, data.user_id, loginPopin, qrcodePopin, popin);
 		});
 		return;
@@ -217,7 +221,6 @@ async function form_2fa(event, id, loginPopin, qrcodePopin, popin) {
 		}),
 		credentials: "include",
 	});
-	console.log("id = ", id);
 	if (response.status === 200) {
 		const data = await response.json();
 		setCookie('user', JSON.stringify(data.user), 5 / 1440);
@@ -234,6 +237,5 @@ async function form_2fa(event, id, loginPopin, qrcodePopin, popin) {
 }
 
 export async function cleanupComponent() {
-	//remove envent listener
 
 }

@@ -1,11 +1,8 @@
 @font-face {
-  font-family: isaac-bold;
+  font-family: isaac;
   src: url(../../routes/assets/font/IsaacGame.ttf);
 }
-@font-face {
-  font-family: isaac-bold;
-  src: url("http://localhost:5500/routes/assets/font/isaac_bold.ttf") format("truetype");
-}
+
 html, body {
   overflow: hidden;
   height: 100%;
@@ -49,7 +46,7 @@ html, body {
   flex-direction: column;
 }
 .flex-container .left .left-top {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   margin-left: 50px;
 }
@@ -61,8 +58,8 @@ html, body {
   padding-bottom: 10px;
 }
 .flex-container .left .left-top .create-box #create-room-btn {
-  font-family: isaac-bold;
-  font-size: 0.7rem;
+  font-family: isaac;
+  font-size: 1rem;
   background-image: url(../../static/assets/sheets/Button.png);
   width: 200px;
   height: 60px;
@@ -107,13 +104,13 @@ html, body {
   list-style-type: none;
 }
 .flex-container .left .chat-list {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   border-top: 2px solid rgb(171, 170, 170);
   border-bottom: 2px solid rgb(171, 170, 170);
   width: 80%;
   margin-left: 50px;
-  min-height: 450px;
+  min-height: 330px;
   list-style-type: none;
   overflow-y: scroll;
   scrollbar-width: thin;
@@ -128,7 +125,7 @@ html, body {
   align-items: center;
 }
 .flex-container .left .invitation {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   margin-left: 50px;
   position: relative;
@@ -159,7 +156,7 @@ html, body {
   height: 100%;
 }
 .flex-container .middle .chat-block .chat-output-block #chat-header {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   padding-top: 30px;
   display: flex;
@@ -178,12 +175,13 @@ html, body {
   overflow: hidden;
 }
 .flex-container .middle .chat-block .chat-output-block #chat-header .room-name {
-  display: inline-flex;
-  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80%;
   font-size: 2rem;
 }
 .flex-container .middle .chat-block .chat-output-block #chat-log {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   overflow-y: auto;
   margin-left: 50px;
@@ -276,7 +274,7 @@ html, body {
   background-color: transparent;
 }
 .flex-container .right {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   background-color: transparent;
   background-image: url("../../static/assets/sheets/chat-right.png");
@@ -293,8 +291,8 @@ html, body {
   padding-top: 20px;
 }
 .flex-container .right .room-info #chat-message-leave {
-  font-family: isaac-bold;
-  font-size: 0.7rem;
+  font-family: isaac;
+  font-size: 1rem;
   background-image: url(../../static/assets/sheets/Button-cross.png);
   width: 200px;
   height: 60px;
@@ -342,7 +340,7 @@ html, body {
   margin-bottom: 15px;
 }
 .flex-container .right .chat-conf #user-add-remove-block #button-add-user {
-  font-family: isaac-bold;
+  font-family: isaac;
   font-size: 0.8rem;
   background-image: url(../../static/assets/chat/Button-green.png);
   width: 150px;
@@ -362,7 +360,7 @@ html, body {
   background-color: transparent;
 }
 .flex-container .right .chat-conf #user-add-remove-block #button-remove-user {
-  font-family: isaac-bold;
+  font-family: isaac;
   font-size: 0.8rem;
   background-image: url(../../static/assets/chat/button-red.png);
   width: 150px;
@@ -433,7 +431,7 @@ html, body {
   gap: 20px;
 }
 .flex-container .right .chat-conf #roomConfForm #submit-delete-block #submit-edit {
-  font-family: isaac-bold;
+  font-family: isaac;
   font-size: 0.7rem;
   background-image: url(../../static/assets/sheets/Button.png);
   width: 150px;
@@ -453,7 +451,7 @@ html, body {
   background-color: transparent;
 }
 .flex-container .right .chat-conf #roomConfForm #chat-delete {
-  font-family: isaac-bold;
+  font-family: isaac;
   font-size: 0.7rem;
   background-image: url(../../static/assets/sheets/Button-delete.png);
   width: 150px;
@@ -477,7 +475,7 @@ html, body {
 }
 .flex-container .right .lower-left .user-list {
   height: 175px;
-  font-family: isaac-bold;
+  font-family: isaac;
   color: #2d2d2d;
   width: 80%;
   list-style-type: none;
@@ -508,8 +506,9 @@ html, body {
   margin-right: 10px;
 }
 .room .room-name-left {
-  display: inline-flex;
-  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 100px;
 }
 
 .invite-test {
@@ -572,7 +571,9 @@ input[type=text] {
   transition: 0.3s;
   box-shadow: none;
   background-color: #e9dadf;
-  font-family: isaac-bold;
+  font-family: isaac;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 input[type=text]:focus {
@@ -582,13 +583,13 @@ input[type=text]:focus {
 }
 
 .input-text-chat::-moz-placeholder {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: gray;
   opacity: 0.7;
 }
 
 .input-text-chat::placeholder {
-  font-family: isaac-bold;
+  font-family: isaac;
   color: gray;
   opacity: 0.7;
 }

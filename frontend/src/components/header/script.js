@@ -1,3 +1,5 @@
+import { get_user } from "../user/script.js";
+
 setTimeout(function() {
     let headerElement = document.querySelector('header'); 
     
@@ -36,10 +38,10 @@ function denyLink() {
 }
 
 export async function initComponent() {
-	let user = await get_user();
-    if (!user) {
-		denyLink();
-	}
+	// let user = await get_user();
+    // if (!user) {
+	// 	denyLink();
+	// }
 
 	const sidebar = document.querySelector('.sidebar');
 	const iconImage = document.getElementById('iconImage');

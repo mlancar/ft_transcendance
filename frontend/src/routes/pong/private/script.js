@@ -31,7 +31,7 @@ class PrivateMatchmakingSocket {
       get_user().then((response) => {
         if (response == null) {
           customalert("Error", "You are not logged in", true);
-          router.navigate('/login');
+          router.navigate('/');
         }
         this.open();
       });
@@ -153,10 +153,11 @@ async function handleClick() {
 }
 
 export async function initComponent() {
+  await new Promise((resolve, reject) => setTimeout(resolve, 100));
   const user = await get_user();
   if (!user) {
     customalert("Error", "You are not logged in", true);
-    router.navigate('/login?return=/pong');
+    router.navigate('/');
   }
 
   const urlParams = new URLSearchParams(window.location.search);
